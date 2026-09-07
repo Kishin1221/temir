@@ -73,32 +73,19 @@ subroutine apply_BC(nnode, num_bc_set, bc_node_set, num_node_in_set, fixed_disp_
         end if
     end do
 
-   !! Reduction of stiffness matrix
-   !reduced_stiffness = 0.0d0                               ! Initialize
-   !do i = 1, 2*nnode
-   !    do j = 1, 2* nnode
-   !        if (.not. is_fixed(i) .and. .not. is_fixed(j)) then                                     ! If both of row and colmun are not fixed
-   !            reduced_stiffness(i - shift_index(i), j - shift_index(j)) = stiffness(i, j)         ! Reduction. Store the entry of stiffness matrix
-   !        
-   !        else
-   !            ! Do not store
-
-   !        end if
-   !    end do
-   !end do
-
+    ! Reduction of stiffness matrix
+    reduced_stiffness = 0.0d0                               ! Initialize
     do i = 1, 2*nnode
-        do j = 1, 2*nnode
-            if (.not. is_fixed(i) .and. .not. is_fixed(j)) then
-                reduced_stiffness(i - shift_index(i), j - shift_index(j)) = stiffness(i, j)
-                if (i - shift_index(i) == 5) then                     ! DEBUG: 対象行を5に変更
-                    print *, "original dof i=", i, " -> reduced row 5, from stiffness(i,j)=", stiffness(i,j)
-                end if
+        do j = 1, 2* nnode
+            if (.not. is_fixed(i) .and. .not. is_fixed(j)) then                                     ! If both of row and colmun are not fixed
+                reduced_stiffness(i - shift_index(i), j - shift_index(j)) = stiffness(i, j)         ! Reduction. Store the entry of stiffness matrix
+            
+            else
+                ! Do not store
+
             end if
         end do
     end do
-
-
 
     ! Apply BC of fixed_disp to global force vector
     force = 0.0d0
