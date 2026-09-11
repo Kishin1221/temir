@@ -190,7 +190,7 @@ subroutine read_BC(datfile, num_bc_set, bc_node_set, num_node_in_set, fixed_disp
                     end if
                 end do                
         
-                                read(datfile,"(A)") line
+                read(datfile,"(A)") line
                 backspace(datfile)                                  ! Read the next line
                 if (line(1:12) == "point load") then                ! Judge whether fixed disp end or still exist below
                     exit

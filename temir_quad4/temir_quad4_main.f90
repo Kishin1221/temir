@@ -13,7 +13,7 @@ module parameters
    
 contains
     !!! This is the function to convert values from marc_style_exponent notation to real(8) notation.
-    function expodouble(field) result(value)
+    function expo2double(field) result(value)
         character(len = *), intent(in) :: field
         integer :: expo, pos
         real(8) :: base, value
@@ -24,7 +24,7 @@ contains
 
         value = base * 10.0d0**expo
 
-    end function expodouble
+    end function expo2double
 end module parameters
 
 !!! Main of the program
@@ -49,3 +49,6 @@ program main
 
     ! Start subroutine
     call read_geometry(datfile, nnode, nelem, connect, coord, E, nu, t)
+
+    call read_BC(datfile, nnode, bc_node_set, num_node_in_set, fixed_disp_vector, fixed_disp_magn, point_load_magn, num_bc_set)
+    
