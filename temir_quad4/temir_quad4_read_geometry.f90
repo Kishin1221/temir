@@ -48,8 +48,8 @@ subroutine read_geometry(datfile, nnode, nelem, connect, coord, E, nu, t)
     end do
 
     ! Declare matrix size
-    allocate(connect(nelem, 4))
-    allocate(coord(nnode, 3))
+    allocate (connect(nelem, 4))
+    allocate (coord(nnode, 3))
 
     ! Store element connectivity
     do 

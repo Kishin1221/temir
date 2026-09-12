@@ -10,6 +10,17 @@
 !!! Module set
 module parameters
     implicit none
+    
+    !!! Parameters for gauss Integration (2×2 for quad)
+    ! Nodes of master elements
+    real(8), parameter :: node_xi(4) = [-1.0d0, 1.0d0, 1.0d0, -1.0d0]
+    real(8), parameter :: node_eta(4) = [-1.0d0, -1.0d0, 1.0d0, 1.0d0]
+
+    ! Nodes and weights of gauss point
+    integer, parameter :: ngauss = 4
+    real(8), parameter :: gauss_pt(4,2) = reshape([-0.5773502692d0, 0.5773502692d0, 0.5773502692d0, -0.5773502692d0, &
+                                            -0.5773502692d0, -0.5773502692d0, 0.5773502692d0, 0.5773502692d0], shape=[4,2])
+    real(8), parameter :: gauss_wt(4) = [1.0d0, 1.0d0, 1.0d0, 1.0d0]
    
 contains
     !!! This is the function to convert values from marc_style_exponent notation to real(8) notation.
@@ -26,6 +37,7 @@ contains
 
     end function expo2double
 end module parameters
+
 
 !!! Main of the program
 program main
@@ -51,4 +63,10 @@ program main
     call read_geometry(datfile, nnode, nelem, connect, coord, E, nu, t)
 
     call read_BC(datfile, nnode, bc_node_set, num_node_in_set, fixed_disp_vector, fixed_disp_magn, point_load_magn, num_bc_set)
+
+    call make_D(D, E, nu)
+
+    call derivative_shape_function(dNdxi, dNdeta)
+
+    call make_B(connect, coord, nelem, dNdxi, dNdeta, B, detJ)
     
