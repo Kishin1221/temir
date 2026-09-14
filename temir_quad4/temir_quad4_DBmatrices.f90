@@ -3,6 +3,10 @@ subroutine make_D(D, E, nu)
     use parameters
     implicit none
 
+    !!!!! Get material info and make D-matrix.
+    !!! This program only accept plane stress model now.
+    ! E is young modular, nu is poisson ratio.
+
     ! Input arguments
     real(8), intent(in) :: E, nu
 
@@ -15,7 +19,7 @@ subroutine make_D(D, E, nu)
     ! Initialize
     D = 0.0d0
 
-    !!! This program only accept plane stress model now.
+
     ! Caluculate D matrix
     factor = E / (1-nu**2)
 
@@ -34,19 +38,22 @@ subroutine derivative_shape_function(dNdxi, dNdeta)
     use parameters
     implicit none
 
+    !!!!! Calculate derivative of shape function.
+
     ! Output arguments
     real(8), intent(out) :: dNdxi(4,4), dNdeta(4,4)
 
     !Local variables
     integer :: igp, inode
 
+
+    ! Vamos a derivar shape functions
     do igp = 1, ngauss                                      ! In fortran, row loop should be arrenged outside.
         do inode = 1, 4
-            dNdxi(inode, igp)  = 0.25d0 * node_xi(inode)  * (1.0d0 + node_eta(inode) * gauss_pt(igp, 2))
-            dNdeta(inode, igp) = 0.25d0 * node_eta(inode) * (1.0d0 + node_xi(inode)  * gauss_pt(igp, 1))
+            dNdxi(inode, igp)  = 0.25d0 * node_xi(inode)  * (1.0d0 + node_eta(inode) * gauss_pt(igp, 2))                ! Differentiate by xi
+            dNdeta(inode, igp) = 0.25d0 * node_eta(inode) * (1.0d0 + node_xi(inode)  * gauss_pt(igp, 1))                ! Differentiate by eta
         end do
     end do
-
 
 end subroutine derivative_shape_function
 
@@ -78,6 +85,7 @@ subroutine make_B(connect, coord, nelem, dNdxi, dNdeta, B, detJ)
     do ielem = 1, nelem
         do igp = 1, ngauss
             
+            ! Initialize
             J = 0.0d0
             dNdx = 0.0d0
             dNdy = 0.0d0
@@ -91,15 +99,18 @@ subroutine make_B(connect, coord, nelem, dNdxi, dNdeta, B, detJ)
 
             detJ(ielem, igp) = J(1,1) * J(2, 2) - J(1, 2) * J(2, 1)
 
+            ! "H" is inverse matrix of J 
             H(1,1) =  J(2,2) / detJ(ielem, igp)
             H(1,2) = -J(1,2) / detJ(ielem, igp)
             H(2,1) = -J(2,1) / detJ(ielem, igp)
             H(2,2) =  J(1,1) / detJ(ielem, igp)
 
             do inode = 1, 4
+                ! Entries of Bmatrix are stored in dNdx and dNdy 
                 dNdx(inode) = dNdxi(inode, igp) * H(1, 1) + dNdeta(inode, igp) * H(2, 1)
                 dNdy(inode) = dNdxi(inode, igp) * H(1, 2) + dNdeta(inode, igp) * H(2, 2)
 
+                ! Assign entries of dNdx and dNdy in appropriate position
                 B(ielem, igp, 1, 2*inode-1) = dNdx(inode)
                 B(ielem, igp, 2, 2*inode-1) = 0.0d0
                 B(ielem, igp, 3, 2*inode-1) = dNdy(inode)

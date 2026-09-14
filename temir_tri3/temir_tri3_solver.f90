@@ -41,7 +41,7 @@ subroutine solver(num_not_fixed, reduced_stiffness, reduced_force, reduced_disp)
         end do
 
         if (abs(best_value) < 1.0d-8) then                   ! DEBUG
-            print *, "k = ", k, " best_value = ", best_value  ! DEBUG
+            print *, "k = ", k, " best_value = ", best_value ! DEBUG
         end if
 
         temp_piv = piv(k)                                   ! Evacuation

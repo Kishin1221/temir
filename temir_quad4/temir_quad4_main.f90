@@ -70,3 +70,8 @@ program main
 
     call make_B(connect, coord, nelem, dNdxi, dNdeta, B, detJ)
     
+    call make_elem_stiffness(B, detJ, nelem, D, t, elem_stiffness)
+
+    call  assemble_stiffness(connect, elem_stiffness, nelem, nnode, stiffness)
+
+    call solver(reduced_stiffness, reduced_force, num_not_fixed, reduced_disp)

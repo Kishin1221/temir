@@ -1,31 +1,34 @@
-subroutine apply_BC(nnode, num_bc_set, bc_node_set, num_node_in_set, fixed_disp_vector, fixed_disp_magn, point_load_magn, &
-                    stiffness, shift_index, num_not_fixed, is_fixed, reduced_stiffness, force, reduced_force)
+subroutine apply_BC(bc_node_set, num_node_in_set, fixed_disp_vector, fixed_disp_magn, point_load_magn, stiffness, nnode, num_bc_set, &
+                    is_fixed, shift_index, reduced_stiffness, force, reduced_force, num_not_fixed)
 
     use parameters
     implicit none
 
-    !!!!! Get BC and global_stiffness matrix, and assemble in equations.
-
     ! Input arguments
-    integer, intent(in) :: nnode, num_bc_set, bc_node_set(nbc_max,1000), num_node_in_set(nbc_max)
-    integer, intent(in) :: fixed_disp_vector(nbc_max,3) 
-    real(8), intent(in) :: fixed_disp_magn(nbc_max,3), point_load_magn(nbc_max,2)
-    real(8), intent(in) :: stiffness(2*nnode_max, 2*nnode_max)
+    integer, allocatable, intent(in) :: bc_node_set(:,:), num_node_in_set(:), fixed_disp_vector(:,:) 
+    real(8), allocatable, intent(in) :: fixed_disp_magn(:,:), point_load_magn(:,:), stiffness(:,:)
+    integer, intent(in) :: nnode, num_bc_set
 
     ! Output arguments
-    integer, intent(out) :: shift_index(2*nnode_max), num_not_fixed
-    logical, intent(out) :: is_fixed(2*nnode_max)
-    real(8), intent(out) :: reduced_stiffness(2*nnode_max,2*nnode_max)
-    real(8), intent(out) :: force(2*nnode_max), reduced_force(2*nnode_max)
+    logical, allocatable, intent(out) :: is_fixed(:)
+    integer, allocatable, intent(out) :: shift_index(:)
+    real(8), allocatable, intent(out) :: reduced_stiffness(:,:), force(:), reduced_force(:)
+    integer, intent(out) :: num_not_fixed
 
-    ! Local variables in apply_BC
+    ! Local variables
     integer :: i, j, k, trans_dof
 
-    !!! Find fixed degrees of freedom 
+    ! Declare matrices size
+    allocate (is_fixed(2*nnode))
+    allocate (shift_index(2*nnode))
+    allocate (force(2*nnode))
+
+
+    !!! Find fixed fegree of freedom 
     ! The index of is_fixed is corresponding to degrees of freedom of all nodes.
     is_fixed = .false.                                      ! Initialize : assume that all degrees of freedom is not fixed
     do k = 1, num_bc_set
-        do i = 1, 3
+        do i = 1, 2
             if (fixed_disp_vector(k, i) == 1) then          ! When displacement of x is fixed
                 do j = 1, num_node_in_set(k)
                     is_fixed(2 * bc_node_set(k, j) - 1) = .true.                ! .true. means this degree of freedom is fixed
@@ -72,6 +75,9 @@ subroutine apply_BC(nnode, num_bc_set, bc_node_set, num_node_in_set, fixed_disp_
             num_not_fixed = num_not_fixed + 1
         end if
     end do
+
+    allocate (reduced_stiffness(num_not_fixed, num_not_fixed))
+    allocate (reduced_force(num_not_fixed))
 
     ! Reduction of stiffness matrix
     reduced_stiffness = 0.0d0                               ! Initialize
